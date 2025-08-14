@@ -18,20 +18,18 @@ This project focuses on applying data mining techniques to the Iris dataset and 
 5. To perform association rule mining on transactional data.
 
 ## Tables of Contents
-[1. Data Warehousing](#1-data-warehousing)
-    [1.1 Extract Transform Load](#11-extract_transform_load)
-    [1.2 Online Analytical Processing Operation](#12-online-analytical-processing-operation)
-
-[2. Data Mining](#2-data-mining)
-    [2.1 Data Preprocessing](#21-data-preprocessing)
-    [2.2 Data Exploration](#22-data-exploration)
-    [2.3 Clustering](#23-clustering)
-
-[2b. Association](#1b-association)
-
-[Setup and Usage](#setup-and-usage)
-
-[License](#license)
+1. [1. Data Warehousing](#1-data-warehousing)
+  - [1.1 Extract Transform Load](#11-extract_transform_load)
+  - [1.2 Online Analytical Processing Operation](#12-online-analytical-processing-operation)
+2. [2. Data Mining](#2-data-mining)
+  - [2.1 Data Preprocessing](#21-data-preprocessing)
+  - [2.2 Data Exploration](#22-data-exploration)
+  - [2.3 Clustering](#23-clustering)
+3. [2b. Association](#1b-association)
+4. [Project Structure](#project-structure)
+4. [Setup and Usage](#setup-and-usage)
+5. [Recommendation](#recommendation)
+6. [License](#license)
 
 
 ## 1. Data Warehousing
@@ -250,14 +248,99 @@ Data columns: ['Description', 'Quantity', 'InvoiceDate', 'UnitPrice', 'CustomerI
 ### 1.2 Online Analytical Processing Operation 
 We will execute three main types of OLAP queries:
 
-1. **Roll-up**: Aggregating sales data by country and quarter
-2. **Drill-down**: Detailed analysis of UK sales by month
-3. **Slice**: Category-specific sales analysis
-4. **Pivot**: Cross-tabulation analysis
+1. Roll-up Analysis: Sales by Country and Quarter
+**Objective**: Aggregate sales data to provide high-level insights into geographic and temporal performance.
 
-Each analysis includes visualizations and summary statistics for business intelligence insights.
+**Key Findings**:
+- The analysis reveals seasonal patterns and geographic concentration of sales
+- United Kingdom dominates sales across all quarters, indicating strong domestic market performance
+- Quarterly trends show consistent patterns, with certain quarters performing better than others
+- Cross-tabulation of country and quarter data enables identification of regional seasonal variations
 
+**Business Value**: This roll-up view helps executives understand market performance at a strategic level, enabling resource allocation decisions and market expansion strategies.
 
+OLAP sql query:
+```sql
+SELECT
+    c.Country,
+    t.Quarter,
+    t.Year,
+    SUM(fs.SalesAmount) AS TotalSales,
+    COUNT(DISTINCT fs.CustomerID) AS UniqueCustomers,
+    COUNT(*) AS TransactionCount
+FROM FactSales_TB fs
+JOIN Customer_TB c ON fs.CustomerID = c.CustomerID
+JOIN Time_TB t ON fs.TimeID = t.TimeID
+GROUP BY c.Country, t.Quarter, t.Year
+ORDER BY t.Year, t.Quarter, TotalSales DESC;
+```
+![alt text](<Data Warehousing/OLAP Queries and Analysis/Visulaization Screenshots/rollup_country_quarter.png>)
+
+2. Drill-down Analysis: United Kingdom Monthly Sales
+**Objective**: Provide detailed monthly breakdown for the top-performing market (UK) to identify trends and anomalies.
+
+**Key Findings**:
+- Monthly sales patterns reveal operational insights not visible at quarterly level
+- Specific months show significant variations in transaction volume and average order value
+- The detailed view enables identification of promotional impacts and seasonal effects
+- Transaction count trends may indicate customer behavior changes over time
+
+**Business Value**: This granular view supports tactical decision-making, including inventory planning, promotional scheduling, and resource allocation for peak periods.
+
+SQL query:
+```sql
+SELECT
+    t.Year,
+    t.Month,
+    CASE t.Month
+        WHEN 1 THEN 'January'
+        -- ... (all months mapped)
+        WHEN 12 THEN 'December'
+    END AS MonthName,
+    SUM(fs.SalesAmount) AS MonthlySales,
+    AVG(fs.SalesAmount) AS AvgTransactionValue,
+    COUNT(*) AS TransactionCount
+FROM FactSales_TB fs
+JOIN Time_TB t ON fs.TimeID = t.TimeID
+JOIN Customer_TB c ON fs.CustomerID = c.CustomerID
+WHERE c.Country = 'United Kingdom'
+GROUP BY t.Year, t.Month
+ORDER BY t.Year, t.Month;
+```
+![alt text](<Data Warehousing/OLAP Queries and Analysis/Visulaization Screenshots/drilldown_uk_monthly.png>)
+
+3. Slice Analysis: Product Category Performance
+**Objective**: Isolate and analyze performance across different product categories to understand product portfolio effectiveness.
+
+**Key Findings**:
+- Product categories show distinct performance characteristics in terms of sales volume, quantity, and average transaction value
+- Category analysis reveals which product lines drive revenue vs. volume
+- Product count per category indicates portfolio depth and diversification
+- Average transaction values vary significantly across categories, suggesting different customer segments
+
+**Business Value**: This analysis informs product strategy, inventory management, and marketing focus areas.
+
+SQL query:
+```sql
+SELECT
+    p.ProductCategory,
+    SUM(fs.SalesAmount) AS TotalSales,
+    SUM(fs.QuantitySold) AS TotalQuantity,
+    COUNT(DISTINCT p.ProductID) AS ProductCount,
+    AVG(fs.SalesAmount) AS AvgSalesPerTransaction
+FROM FactSales_TB fs
+JOIN Product_TB p ON fs.ProductID = p.ProductID
+WHERE p.ProductCategory IN ('Home Decor', 'Vintage', 'Sets')
+GROUP BY p.ProductCategory
+ORDER BY TotalSales DESC;
+```
+![alt text](<Data Warehousing/OLAP Queries and Analysis/Visulaization Screenshots/slice_product_categories.png>)
+
+**Conclusion**
+
+The OLAP analysis demonstrates the data warehouse's effectiveness in supporting decision-making across organizational levels. From strategic market analysis to operational optimization, the dimensional model provides flexible, fast, and reliable analytical capabilities. The combination of roll-up, drill-down, and slice operations enables comprehensive business intelligence that drives informed decision-making.
+
+The warehouse architecture successfully transforms transactional data into actionable insights, supporting both ad-hoc analysis and regular reporting requirements. This foundation enables data-driven decision-making across sales, marketing, and operational functions.
 
 ## 2. Data Mining
 This section covers data preprocessing, clustering, classification, and association rule mining using the Iris dataset and synthetic transactional data.
@@ -541,6 +624,43 @@ The practical use of the association rule:
 
 **Implication:** This could be used in retail for product bundling or targeted recommendation or simply putting the two products together in a retail store.
 
+## Project Structure
+```
+project/
+├── Data/
+│   ├── raw/
+│   ├── interim/
+│   └── processed/
+├── Data Warehousing/
+│   ├── Data Warehouse Design/
+│   └── OLAP Queries and Analysis/
+│       └── Visulaization Screenshots/
+├── Data Mining/
+│   └── Data Prerocessing and Exploration/
+│       └── images/
+├── notebooks/
+│   ├── 1_extract_transform.ipynb
+│   ├── 2_exploratory_analysis.ipynb
+│   ├── 3_data_mining.ipynb
+│   └── 4_insights_dashboard.ipynb
+├── src/
+│   ├── etl/
+│   ├── warehouse/
+│   │   ├── schema/
+│   │   └── olap_queries/
+│   ├── mining/
+│   ├── viz/
+│   └── config/
+├── models/
+│   ├── clustering/
+│   └── classification/
+├── scripts/
+│   ├── run_etl.py
+│   ├── run_olap.py
+│   └── run_mining.py
+├── LICENSE
+└── README.md
+```
 ## Setup and Usage
 1. Clone this repository
 ```bash
@@ -548,6 +668,50 @@ git clone https://github.com/Campeon254/DSA-2040_Practical_Exam_-Calvin_035-.git
 
 cd DSA-2040_Practical_Exam_-Calvin_035-
 ```
+
+2. Prerequisites
+```
+python 3.10+
+Git, VS Code, Jupyter
+SQLite
+Windows: use PowerShell or Git Bash for scripts
+```
+
+3. Installation
+```powershell
+# PowerShell (Windows)
+python -m venv .venv
+. .\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+4. Configuration
+- Edit src/config/settings.yaml for paths and parameters.
+- Optional environment file:
+```ini
+DW_DB_PATH=Retail_dw.db
+DATA_DIR=Data
+RANDOM_SEED=42
+```
+5. Running the Project
+```bash
+# Activate virtual environment
+source .venv/bin/activate
+
+# Run ETL process
+python src/etl/main.py
+
+# Run OLAP queries
+python src/warehouse/olap_queries/main.py
+
+# Run Data Mining
+python src/mining/main.py
+```
+
+## Recommendation
+1. **Enhanced Categorization**: Implement more sophisticated product categorization to improve slice operations
+2. **Additional Dimensions**: Consider adding store and channel dimensions for richer analysis
+3. **Automated Reporting**: Develop scheduled OLAP query execution for regular business reviews
+4. **Performance Monitoring**: Implement query performance tracking as data volume grows
 
 
 ## License
