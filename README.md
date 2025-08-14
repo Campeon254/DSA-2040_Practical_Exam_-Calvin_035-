@@ -1,39 +1,127 @@
 # DSA-2040_Practical_Exam_-Calvin_035-
 An project to practice my Data Warehousing and Data Mining Skills.
 
-## Objectives
+## Tables of Contents
+[1. Data Mining](#1-data-mining)
+    [1.1 Data Preprocessing](#11-data-preprocessing)
+    [1.2 Data Exploration](#12-data-exploration)
 
-1. To create a data warehouse for storing and managing the extracted data.
-2. To implement the ETL (Extract, Transform, Load) process for data integration.
 
-## Table of Contents
 
-1. [Data Warehouse Design](#data-warehouse-design)
-   - 1.1 [Overview](#overview)
-   - 1.2 [Design](#design)
-   - 1.3 [Implementation](#implementation)
-2. [ETL Process](#etl-process)
-   - 2.1 [Extract](#extract)
-   - 2.2 [Transform](#transform)
-   - 2.3 [Load](#load)
 
-## Data Warehouse Design
-### Overview
-The data warehouse is designed to facilitate the analysis and reporting of sales data across different dimensions such as time, geography, and product categories. I used a star schema because of its `simplicity and ease of use.` The star schema has a `straightforward design`, which makes it easier for users to understand and query the data. In a star schema, the fact table is at the center, surrounded by dimension tables that are directly connected to it. This design allows for `quick access to data and efficient querying`.
 
-The following is a visual representation of the star schema:
 
-![Star Schema Design](/Data%20Warehousing/Data%20Warehouse%20Design/Schema%20Design.jpg)
+## 1. Data Mining
+This section covers data preprocessing, clustering, classification, and association rule mining using the Iris dataset and synthetic transactional data.
+### 1.1 Data Preprocessing
+The objective is to ensure the dataset is clean, structures and ready for analysis.
+* Loading the Data
+```python
+# Load the dataset
+iris = load_iris()
+df = pd.DataFrame(data=iris.data, columns=iris.feature_names)
+df['species'] = pd.Categorical.from_codes(iris.target, iris.target_names)
+df.head()
+```
+* Handling missing values: There were no missing values.
+* Date type converion: Ensuring dates were `datetime` objects and numerical columns had appropriate types.
+* Dealing with outliers.
+* Feature scaling - normalizing the feature values to a common scale, which can improve the performance of machine learning algorithms.
+* Encoding class labels - converts the species names into numerical labels allowing models to be processed effectively/
 
-### Design
-The data warehouse consists of the following key components:
-- Fact Table: SalesFact
-  - Measures: TotalPrice, QuantitySold
-  - Foreign Keys: CustomerID, ProductID, TimeID
-- Dimension Tables:
-  - Customer_TB: CustomerID, Name, Email, Country
-  - Product_TB: ProductID, Name, Category, Price
-  - Time_TB: TimeID, Date, Month, Quarter, Year
+Sample output of the data:
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>sepal length (cm)</th>
+      <th>sepal width (cm)</th>
+      <th>petal length (cm)</th>
+      <th>petal width (cm)</th>
+      <th>species_setosa</th>
+      <th>species_versicolor</th>
+      <th>species_virginica</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.222222</td>
+      <td>0.625000</td>
+      <td>0.067797</td>
+      <td>0.041667</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0.166667</td>
+      <td>0.416667</td>
+      <td>0.067797</td>
+      <td>0.041667</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0.111111</td>
+      <td>0.500000</td>
+      <td>0.050847</td>
+      <td>0.041667</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0.083333</td>
+      <td>0.458333</td>
+      <td>0.084746</td>
+      <td>0.041667</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0.194444</td>
+      <td>0.666667</td>
+      <td>0.067797</td>
+      <td>0.041667</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 
-### Implementation
-The data warehouse is implemented using SQLite for simplicity. The schema is created using SQL commands, and sample data is loaded into the warehouse for testing and validation.
+### 1.2 Data Exploration
+The objective was to understand data distribution and spot trends
+* Summary Statistics - to understand the statistics of the data.
+* Visualization:
+
+    * `pairplot` to visualize the relationships between features 
+![Pairplot](images/pair_plot.png)
+
+    * `correlation heatmap` to understand feature correlations.
+![Correlation Heatmap](images/correlation_heatmap.png)
+
+
+
+
+
+
+### 3.1 Clustering
+For The clustering analysis, I used `K-Means` clustering algorithm from the `sklearn` library. The dataset was first standardized using `StandardScaler` to ensure that all features contribute equally to the distance calculations. Then, I applied the K-Means algorithm with a predefined number of clusters and fitted it to the standardized data. The resulting clusters were analyzed to identify distinct 
+customer segments based on their purchasing behavior.
+
+    * k=3 was the optimal number of clusters determined by the elbow method.
+
+    * k=4 and k=2 was for comparison
+
+We plotted an `elbow curve` to visualize the optimal number of clusters. The elbow curve showed a clear bend at k=3, confirming it as the optimal choice.
+
